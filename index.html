@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Library</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>My Library</h1>
+  <button id="new-book-btn">➕ New Book</button>
+
+  <!-- Dialog for new book -->
+  <dialog id="book-dialog">
+    <form id="book-form">
+      <h2>Add a New Book</h2>
+
+      <label for="book-title">Book Title</label>
+      <input type="text" id="book-title" name="title" required>
+
+      <label for="book-author">Author</label>
+      <input type="text" id="book-author" name="author" required>
+
+      <label for="book-pages">Number of Pages</label>
+      <input type="number" id="book-pages" name="pages" min="1" required>
+
+      <label>Read?</label>
+      <div>
+        <input type="radio" id="read-yes" name="read" value="Yes" checked>
+        <label for="read-yes">Yes</label>
+        <input type="radio" id="read-no" name="read" value="No">
+        <label for="read-no">No</label>
+      </div>
+
+      <div class="form-buttons">
+        <button type="submit">Add Book</button>
+        <button type="button" id="close-dialog">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="library-display"></div>
+
+  <script>
+    const library = [];
+
+    function Book(title, author, pages, read) {
+      this.id = crypto.randomUUID();
+      this.title = title;
+      this.author = author;
+      this.pages = pages;
+      this.read = read;
+    }
+
+    function addBookToLibrary() {
+      const bookTitle = document.getElementById("book-title");
+      const bookAuthor = document.getElementById("book-author");
+      const bookPages = document.getElementById("book-pages");
+      const bookRead = document.querySelector('input[name="read"]:checked');
+
+      if (!bookTitle.value || !bookAuthor.value || !bookPages.value || !bookRead) {
+        alert("Please fill out all fields!");
+        return;
+      }
+
+      let newBook = new Book(
+        bookTitle.value,
+        bookAuthor.value,
+        bookPages.value,
+        bookRead.value
+      );
+
+      library.push(newBook);
+
+      // Clear fields
+      bookTitle.value = "";
+      bookAuthor.value = "";
+      bookPages.value = "";
+      document.getElementById("read-yes").checked = true;
+
+      displayBooks();
+    }
+
+    function displayBooks() {
+      const display = document.getElementById("library-display");
+      display.textContent = "";
+
+      library.forEach(book => {
+        let card = document.createElement("div");
+        card.classList.add("book-card");
+        card.setAttribute("data-id", book.id);
+
+        let title = document.createElement("h3");
+        title.textContent = book.title;
+
+        let author = document.createElement("p");
+        author.textContent = `Author: ${book.author}`;
+
+        let pages = document.createElement("p");
+        pages.textContent = `Pages: ${book.pages}`;
+
+        let read = document.createElement("p");
+        read.textContent = `Read: ${book.read}`;
+
+        let removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.addEventListener("click", () => removeBook(book.id));
+
+        card.append(title, author, pages, read, removeBtn);
+        display.appendChild(card);
+      });
+    }
+
+    function removeBook(id) {
+      const index = library.findIndex(book => book.id === id);
+      if (index !== -1) {
+        library.splice(index, 1);
+        displayBooks();
+      }
+    }
+
+    // Add some sample books
+    library.push(new Book("Harry Potter", "J.K. Rowling", 400, "Yes"));
+    library.push(new Book("Atomic Habits", "James Clear", 320, "No"));
+    displayBooks();
+
+    // Dialog controls
+    const newBookBtn = document.getElementById("new-book-btn");
+    const bookDialog = document.getElementById("book-dialog");
+    const closeDialog = document.getElementById("close-dialog");
+
+    newBookBtn.addEventListener("click", () => bookDialog.showModal());
+    closeDialog.addEventListener("click", () => bookDialog.close());
+
+    document.getElementById("book-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      addBookToLibrary();
+      bookDialog.close();
+    });
+  </script>
+</body>
+</html>
+
